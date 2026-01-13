@@ -3,6 +3,7 @@ package api
 import (
 	"io/fs"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/TwiN/gatus/v5/config"
@@ -88,6 +89,10 @@ func (a *API) createRouter(cfg *config.Config) *fiber.App {
 	// This endpoint requires authz with bearer token, so technically it is protected
 	unprotectedAPIRouter.Post("/v1/endpoints/:key/external", CreateExternalEndpointResult(cfg))
 	// SPA
+	app.Get("/group=:group", func(c *fiber.Ctx) error {
+		group := c.Params("group")
+		return c.Redirect("/?group="+url.QueryEscape(group), fiber.StatusTemporaryRedirect)
+	})
 	app.Get("/", SinglePageApplication(cfg.UI))
 	app.Get("/endpoints/:key", SinglePageApplication(cfg.UI))
 	app.Get("/suites/:key", SinglePageApplication(cfg.UI))
