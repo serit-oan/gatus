@@ -182,7 +182,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Activity, Timer, RefreshCw, AlertCircle, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, CheckCircle } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import EndpointCard from '@/components/EndpointCard.vue'
@@ -532,6 +532,17 @@ const initializeCollapsedGroups = () => {
   }
 }
 
+const expandGroupsForSearch = () => {
+  if (!groupByGroup.value || !searchQuery.value) {
+    return
+  }
+
+  const groups = combinedGroups.value ? Object.keys(combinedGroups.value) : []
+  uncollapsedGroups.value = new Set(groups)
+  localStorage.setItem('gatus:uncollapsed-groups', JSON.stringify(groups))
+  localStorage.removeItem('gatus:collapsed-groups') // Remove old key if it exists
+}
+
 const dashboardHeading = computed(() => {
   return window.config && window.config.dashboardHeading && window.config.dashboardHeading !== '{{ .UI.DashboardHeading }}' ? window.config.dashboardHeading : "Health Dashboard"
 })
@@ -542,5 +553,9 @@ const dashboardSubheading = computed(() => {
 
 onMounted(() => {
   fetchData()
+})
+
+watch([searchQuery, groupByGroup], () => {
+  expandGroupsForSearch()
 })
 </script>
