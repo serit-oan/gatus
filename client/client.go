@@ -353,8 +353,15 @@ func ExecuteSSHCommand(sshClient *ssh.Client, body string, config *Config) (bool
 //
 // Note that this function takes at least 100ms, even if the address is 127.0.0.1
 func Ping(address string, config *Config) (bool, time.Duration) {
+	if config == nil {
+		config = GetDefaultConfig()
+	}
+	retries := config.ICMPRetries
+	if retries < 0 {
+		retries = 0
+	}
 	pinger := ping.New(address)
-	pinger.Count = 1
+	pinger.Count = 1 + retries
 	pinger.Timeout = config.Timeout
 	pinger.SetPrivileged(ShouldRunPingerAsPrivileged())
 	pinger.SetNetwork(config.Network)

@@ -33,6 +33,7 @@ var (
 		Insecure:       false,
 		IgnoreRedirect: false,
 		Timeout:        defaultTimeout,
+		ICMPRetries:    0,
 		Network:        "ip",
 	}
 )
@@ -56,6 +57,9 @@ type Config struct {
 
 	// Timeout for the client
 	Timeout time.Duration `yaml:"timeout"`
+
+	// ICMPRetries defines how many additional ICMP attempts to perform
+	ICMPRetries int `yaml:"icmp-retries,omitempty"`
 
 	// DNSResolver override for the HTTP client
 	// Expected format is {protocol}://{host}:{port}, e.g. tcp://8.8.8.8:53
@@ -120,6 +124,9 @@ type TLSConfig struct {
 func (c *Config) ValidateAndSetDefaults() error {
 	if c.Timeout < time.Millisecond {
 		c.Timeout = 10 * time.Second
+	}
+	if c.ICMPRetries < 0 {
+		c.ICMPRetries = 0
 	}
 	if c.HasCustomDNSResolver() {
 		// Validate the DNS resolver now to make sure it will not return an error later.
