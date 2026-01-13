@@ -42,21 +42,12 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { Search } from 'lucide-vue-next'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 
-const props = defineProps({
-  initialQuery: {
-    type: String,
-    default: ''
-  },
-  initialSortBy: {
-    type: String,
-    default: ''
-  }
-})
-
+const route = useRoute()
 const searchQuery = ref('')
 const filterBy = ref(localStorage.getItem('gatus:filter-by') || (typeof window !== 'undefined' && window.config?.defaultFilterBy) || 'none')
 const sortBy = ref(localStorage.getItem('gatus:sort-by') || (typeof window !== 'undefined' && window.config?.defaultSortBy) || 'name')
@@ -110,25 +101,27 @@ onMounted(() => {
   // Apply saved or application wide filter/sort state on load but do not store it in localstorage
   handleFilterChange(filterBy.value, false)
   handleSortChange(sortBy.value, false)
+
+  const hasGroupParam = Object.prototype.hasOwnProperty.call(route.query, 'group')
+  if (hasGroupParam) {
+    const rawGroup = Array.isArray(route.query.group) ? route.query.group[0] : route.query.group
+    searchQuery.value = rawGroup ? String(rawGroup) : ''
+    emit('search', searchQuery.value)
+    handleSortChange('group', false)
+  }
 })
 
 watch(
-  () => props.initialQuery,
+  () => route.query.group,
   value => {
-    const nextValue = value || ''
-    if (nextValue === searchQuery.value) return
-    searchQuery.value = nextValue
-    emit('search', searchQuery.value)
-  },
-  { immediate: true }
-)
-
-watch(
-  () => props.initialSortBy,
-  value => {
-    if (!value || value === sortBy.value) return
-    handleSortChange(value, false)
-  },
-  { immediate: true }
+    if (!Object.prototype.hasOwnProperty.call(route.query, 'group')) return
+    const rawGroup = Array.isArray(value) ? value[0] : value
+    const nextQuery = rawGroup ? String(rawGroup) : ''
+    if (nextQuery !== searchQuery.value) {
+      searchQuery.value = nextQuery
+      emit('search', searchQuery.value)
+    }
+    handleSortChange('group', false)
+  }
 )
 </script>
