@@ -555,7 +555,7 @@ onMounted(() => {
   fetchData()
 })
 
-watch([searchQuery, groupByGroup], () => {
+watch([searchQuery, groupByGroup, combinedGroups], () => {
   expandGroupsForSearch()
 })
 </script>
