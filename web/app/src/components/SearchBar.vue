@@ -41,13 +41,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
 import { Search } from 'lucide-vue-next'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 
-const route = useRoute()
+const props = defineProps({
+  initialQuery: {
+    type: String,
+    default: ''
+  },
+  initialSortBy: {
+    type: String,
+    default: ''
+  }
+})
+
 const searchQuery = ref('')
 const filterBy = ref(localStorage.getItem('gatus:filter-by') || (typeof window !== 'undefined' && window.config?.defaultFilterBy) || 'none')
 const sortBy = ref(localStorage.getItem('gatus:sort-by') || (typeof window !== 'undefined' && window.config?.defaultSortBy) || 'name')
@@ -101,10 +110,25 @@ onMounted(() => {
   // Apply saved or application wide filter/sort state on load but do not store it in localstorage
   handleFilterChange(filterBy.value, false)
   handleSortChange(sortBy.value, false)
-
-  // Allow URL ?group= to force grouped sorting without persisting.
-  if (Object.prototype.hasOwnProperty.call(route.query, 'group')) {
-    handleSortChange('group', false)
-  }
 })
+
+watch(
+  () => props.initialQuery,
+  value => {
+    const nextValue = value || ''
+    if (nextValue === searchQuery.value) return
+    searchQuery.value = nextValue
+    emit('search', searchQuery.value)
+  },
+  { immediate: true }
+)
+
+watch(
+  () => props.initialSortBy,
+  value => {
+    if (!value || value === sortBy.value) return
+    handleSortChange(value, false)
+  },
+  { immediate: true }
+)
 </script>

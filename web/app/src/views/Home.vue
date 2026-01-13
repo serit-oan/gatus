@@ -26,6 +26,8 @@
         <AnnouncementBanner :announcements="activeAnnouncements" />
         <!-- Search bar -->
         <SearchBar
+          :initialQuery="searchQuery"
+          :initialSortBy="sortBy"
           @search="handleSearch"
           @update:showOnlyFailing="showOnlyFailing = $event"
           @update:showRecentFailures="showRecentFailures = $event"
@@ -182,7 +184,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { Activity, Timer, RefreshCw, AlertCircle, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, CheckCircle } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import EndpointCard from '@/components/EndpointCard.vue'
@@ -210,6 +213,7 @@ const archivedAnnouncements = computed(() => {
 })
 
 const emit = defineEmits(['showTooltip'])
+const route = useRoute()
 
 const endpointStatuses = ref([])
 const suiteStatuses = ref([])
@@ -540,7 +544,25 @@ const dashboardSubheading = computed(() => {
   return window.config && window.config.dashboardSubheading && window.config.dashboardSubheading !== '{{ .UI.DashboardSubheading }}' ? window.config.dashboardSubheading : "Monitor the health of your endpoints in real-time"
 })
 
+const applyGroupQuery = () => {
+  if (!Object.prototype.hasOwnProperty.call(route.query, 'group')) {
+    return
+  }
+
+  const rawGroup = Array.isArray(route.query.group) ? route.query.group[0] : route.query.group
+  searchQuery.value = rawGroup ? String(rawGroup) : ''
+  sortBy.value = 'group'
+  groupByGroup.value = true
+  currentPage.value = 1
+  initializeCollapsedGroups()
+}
+
 onMounted(() => {
   fetchData()
+  applyGroupQuery()
+})
+
+watch(() => route.query.group, () => {
+  applyGroupQuery()
 })
 </script>
