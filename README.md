@@ -638,6 +638,7 @@ the client used to send the request.
 | `client.ignore-redirect`               | Whether to ignore redirects (true) or follow them (false, default).           | `false`         |
 | `client.timeout`                       | Duration before timing out.                                                   | `10s`           |
 | `client.icmp-retries`                  | Additional ICMP attempts before failing.                                      | `0`             |
+| `client.icmp-retry-delay`              | Delay between ICMP retry attempts.                                            | `0s`            |
 | `client.dns-resolver`                  | Override the DNS resolver using the format `{proto}://{host}:{port}`.         | `""`            |
 | `client.oauth2`                        | OAuth2 client configuration.                                                  | `{}`            |
 | `client.oauth2.token-url`              | The token endpoint URL                                                        | required `""`   |
@@ -665,6 +666,7 @@ client:
   ignore-redirect: false
   timeout: 10s
   icmp-retries: 0
+  icmp-retry-delay: 0s
 ```
 
 Note that this configuration is only available under `endpoints[]`, `alerting.mattermost` and `alerting.custom`.

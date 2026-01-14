@@ -34,6 +34,7 @@ var (
 		IgnoreRedirect: false,
 		Timeout:        defaultTimeout,
 		ICMPRetries:    0,
+		ICMPRetryDelay: 0,
 		Network:        "ip",
 	}
 )
@@ -60,6 +61,9 @@ type Config struct {
 
 	// ICMPRetries defines how many additional ICMP attempts to perform
 	ICMPRetries int `yaml:"icmp-retries,omitempty"`
+
+	// ICMPRetryDelay defines how long to wait between ICMP retry attempts
+	ICMPRetryDelay time.Duration `yaml:"icmp-retry-delay,omitempty"`
 
 	// DNSResolver override for the HTTP client
 	// Expected format is {protocol}://{host}:{port}, e.g. tcp://8.8.8.8:53
@@ -127,6 +131,9 @@ func (c *Config) ValidateAndSetDefaults() error {
 	}
 	if c.ICMPRetries < 0 {
 		c.ICMPRetries = 0
+	}
+	if c.ICMPRetryDelay < 0 {
+		c.ICMPRetryDelay = 0
 	}
 	if c.HasCustomDNSResolver() {
 		// Validate the DNS resolver now to make sure it will not return an error later.

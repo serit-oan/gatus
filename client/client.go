@@ -360,23 +360,34 @@ func Ping(address string, config *Config) (bool, time.Duration) {
 	if retries < 0 {
 		retries = 0
 	}
-	pinger := ping.New(address)
-	pinger.Count = 1 + retries
-	pinger.Timeout = config.Timeout
-	pinger.SetPrivileged(ShouldRunPingerAsPrivileged())
-	pinger.SetNetwork(config.Network)
-	err := pinger.Run()
-	if err != nil {
-		return false, 0
-	}
-	if pinger.Statistics() != nil {
-		// If the packet loss is 100, it means that the packet didn't reach the host
-		if pinger.Statistics().PacketLoss == 100 {
-			return false, pinger.Timeout
+	var lastTimeout time.Duration
+	var lastHadPacketLoss bool
+	for attempt := 0; attempt <= retries; attempt++ {
+		pinger := ping.New(address)
+		pinger.Count = 1
+		pinger.Timeout = config.Timeout
+		pinger.SetPrivileged(ShouldRunPingerAsPrivileged())
+		pinger.SetNetwork(config.Network)
+		err := pinger.Run()
+		if err == nil {
+			if stats := pinger.Statistics(); stats != nil {
+				// If the packet loss is 100, it means that the packet didn't reach the host
+				if stats.PacketLoss == 100 {
+					lastTimeout = pinger.Timeout
+					lastHadPacketLoss = true
+				} else {
+					return true, stats.MaxRtt
+				}
+			}
 		}
-		return true, pinger.Statistics().MaxRtt
+		if attempt < retries && config.ICMPRetryDelay > 0 {
+			time.Sleep(config.ICMPRetryDelay)
+		}
 	}
-	return true, 0
+	if lastHadPacketLoss {
+		return false, lastTimeout
+	}
+	return false, 0
 }
 
 // ShouldRunPingerAsPrivileged will determine whether or not to run pinger in privileged mode.
