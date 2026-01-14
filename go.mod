@@ -12,7 +12,7 @@ require (
 	github.com/TwiN/health v1.6.0
 	github.com/TwiN/logr v0.3.1
 	github.com/TwiN/whois v1.2.0
-	github.com/aws/aws-sdk-go-v2 v1.41.0
+	github.com/aws/aws-sdk-go-v2 v1.41.1
 	github.com/aws/aws-sdk-go-v2/config v1.32.2
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.2
 	github.com/aws/aws-sdk-go-v2/service/ses v1.34.7
